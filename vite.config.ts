@@ -17,7 +17,7 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
-    vike(),
+    vike({ prerender: true }),
   ],
   resolve: {
     alias: {
