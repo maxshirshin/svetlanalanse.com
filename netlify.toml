@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run build && echo '=== HTML files in dist/client ===' && find dist/client -name '*.html' | head -20 && echo '=== Removing dist/server ===' && rm -rf dist/server"
   publish = "dist/client"
 
 [[headers]]
