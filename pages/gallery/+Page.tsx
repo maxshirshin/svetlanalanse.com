@@ -1,0 +1,81 @@
+export default Page;
+
+const subGalleries = [
+  {
+    slug: "botanical-watercolour",
+    title: "Botanical Watercolour",
+    description:
+      "Detailed botanical studies in watercolour on paper and vellum.",
+    count: 12,
+  },
+  {
+    slug: "oil-paintings",
+    title: "Oil Paintings",
+    description:
+      "Still life and botanical compositions in oil, inspired by the Dutch Golden Age masters.",
+    count: 8,
+  },
+  {
+    slug: "miniatures",
+    title: "Miniature Paintings",
+    description: "Intricate miniature works showcasing precision and delicacy.",
+    count: 6,
+  },
+];
+
+function Page() {
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <h1 className="text-center mb-4">Gallery</h1>
+        <p
+          className="text-center mb-12 max-w-2xl mx-auto"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          Explore collections of Svetlana's work across different media and
+          styles.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {subGalleries.map((gallery) => (
+            <a
+              key={gallery.slug}
+              href={`/gallery/${gallery.slug}`}
+              className="group block"
+            >
+              <div
+                className="aspect-[4/3] mb-4 flex items-center justify-center transition-shadow group-hover:shadow-lg"
+                style={{ backgroundColor: "var(--color-border-light)" }}
+              >
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-text-light)" }}
+                >
+                  Cover image placeholder
+                </span>
+              </div>
+              <h2
+                className="text-xl mb-1"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                {gallery.title}
+              </h2>
+              <p
+                className="text-sm"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                {gallery.description}
+              </p>
+              <p
+                className="text-xs mt-2"
+                style={{ color: "var(--color-text-light)" }}
+              >
+                {gallery.count} works
+              </p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
