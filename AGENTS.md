@@ -94,6 +94,24 @@ Netlify. Blog content is authored in MDX.
 - **Navigation**: Use standard `<a href="...">` tags — Vike handles client-side navigation automatically.
 - **Active link detection**: Use `usePageContext()` from `vike-react/usePageContext` to get `urlPathname`.
 
+### Pre-rendering dynamic routes
+
+Each parameterised route (`@slug`) needs a `+onBeforePrerenderStart.ts` file
+that returns the list of URLs to pre-render at build time.
+
+- **Blog**: `pages/blog/@slug/+onBeforePrerenderStart.ts` reads slugs from the
+  `blogPosts` array in `src/data/blogPosts.ts`. Adding a new MDX post and
+  registering it in `blogPosts` is sufficient — no other file needs updating.
+- **Gallery**: `pages/gallery/@slug/+onBeforePrerenderStart.ts` has a
+  **hardcoded** `gallerySlugs` array. When adding or renaming a sub-gallery you
+  must update **three** places:
+  1. `gallerySlugs` in `pages/gallery/@slug/+onBeforePrerenderStart.ts`
+  2. `galleryData` in `pages/gallery/@slug/+Page.tsx`
+  3. `subGalleries` in `pages/gallery/+Page.tsx`
+
+  TODO: Extract gallery data into a centralised file in `src/data/` (like blog
+  posts and shop items) to avoid this duplication.
+
 ---
 
 ## 5. MDX Blog Posts
@@ -120,7 +138,26 @@ Your markdown content here. You can use React components inline.
 
 After creating the file, import it in `src/data/blogPosts.ts` and add it to the
 `blogPosts` array. The blog index and slug-based routing will pick it up
-automatically.
+automatically (including pre-rendering — see Section 4).
+
+### Frontmatter export mechanism
+
+The MDX pipeline uses two remark plugins configured in `vite.config.ts`:
+
+1. `remark-frontmatter` — parses the YAML block from the MDX file.
+2. `remark-mdx-frontmatter` (with `{ name: 'frontmatter' }`) — exposes the
+   parsed YAML as a **named export** called `frontmatter`.
+
+TypeScript types for `.mdx` imports are declared in `src/types/mdx.d.ts`. This
+file must be kept in sync if new frontmatter fields are added.
+
+Import pattern:
+
+```ts
+import MyPost, { frontmatter } from "../../content/blog/my-post.mdx";
+// frontmatter.title, frontmatter.slug, etc.
+// MyPost is the React component (default export)
+```
 
 ### Language handling
 
@@ -192,18 +229,53 @@ checkout (e.g., Stripe Payment Link or Shopify Buy Button).
 
 ## 9. Netlify Deployment
 
-- **Build command**: `npm run build`
+- **Build command**: `npm run build` (which runs `tsc -b && vike build`)
+- **Netlify build command** (in `netlify.toml`): `npm run build && rm -rf dist/server`
 - **Publish directory**: `dist/client`
 - **Forms**: The contact form uses `data-netlify="true"` — Netlify detects it at
   build time. No serverless function needed.
-- **Redirects**: SPA fallback `/* → /index.html` is configured in `netlify.toml`.
 - **Asset caching**: `/assets/*` gets `Cache-Control: public, max-age=31536000, immutable`.
+
+### Build output: `dist/client` vs `dist/server`
+
+Vike always generates **two** output directories:
+
+- **`dist/client/`** — Pre-rendered static HTML, JS bundles, CSS, assets. This
+  is what Netlify serves to browsers.
+- **`dist/server/`** — A Node.js server entry (`entry.mjs`) and server-side page
+  renderers for SSR. **Not used** in our SSG-only setup.
+
+Vike produces `dist/server/` regardless of rendering mode, because it supports
+switching individual pages from SSG to SSR without changing the build toolchain.
+
+### Why we remove `dist/server`
+
+Netlify auto-detects frameworks. When it sees `dist/server/` with `.mjs` entry
+files alongside `dist/client/`, it may interpret the deploy as SSR and attempt to
+wire up serverless functions — routing requests through a non-functional SSR
+handler instead of serving the static HTML files. Removing `dist/server` after
+the build prevents this.
+
+### Important: use `vike build`, not `vite build`
+
+The npm `build` script must use `vike build` (Vike's CLI wrapper), **not**
+`vite build`. On Netlify's CI environment, `vite build` silently skips the
+pre-rendering step, producing JS/CSS assets but no HTML files. `vike build`
+properly triggers pre-rendering.
+
+### If switching to SSR later
+
+Remove the `rm -rf dist/server` from `netlify.toml`, configure Netlify's
+serverless adapter for Vike, and set `prerender: false` on the pages that need
+dynamic rendering.
 
 ---
 
 ## 10. shadcn/ui
 
 - MCP server configured in `.vscode/mcp.json` for AI-assisted component addition.
+- **Not yet initialised** — `npx shadcn@latest init` has not been run. There is
+  no `components.json` yet. Run init before adding any components.
 - To add a component: `npx shadcn@latest add <component-name>`
 - Components are copied into `src/components/ui/` and can be freely customised.
 - Theme tokens are defined in `src/styles/global.css` under `@theme { ... }`.
@@ -236,3 +308,63 @@ checkout (e.g., Stripe Payment Link or Shopify Buy Button).
    attribute is set per-post.
 6. **Copyright protection**: All artwork images are copyrighted. The Terms page
    explicitly states this. Consider right-click protection and watermarks later.
+
+---
+
+## 13. Development Workflow
+
+| Command           | What it does                                          |
+| ----------------- | ----------------------------------------------------- |
+| `npm run dev`     | Starts Vite dev server (default `localhost:5173`)     |
+| `npm run build`   | Type-check + `vike build` (SSG pre-render all pages)  |
+| `npm run preview` | Preview the production build locally (`vite preview`) |
+| `npm run lint`    | Run ESLint                                            |
+
+ESLint is configured with `eslint-plugin-react-hooks` and
+`eslint-plugin-react-refresh`.
+
+---
+
+## 14. TypeScript Configuration
+
+- **Solution-style tsconfig**: `tsconfig.json` references `tsconfig.app.json`
+  (app code) and `tsconfig.node.json` (Vite config, build scripts).
+- **Path alias `@` → `./src`**: Configured in **two** places that must stay in
+  sync:
+  - `vite.config.ts` → `resolve.alias` (for build resolution)
+  - `tsconfig.app.json` → `paths` + `baseUrl` (for type-checking & IDE)
+- **Include scope**: `tsconfig.app.json` includes `["src", "pages", "content"]`.
+  The `content` directory must be included for MDX type declarations to work.
+- **Strict mode**: Enabled, with `noUnusedLocals` and `noUnusedParameters`.
+
+---
+
+## 15. Git & Repository
+
+- **Repository**: `maxshirshin/svetlanalanse.com` on GitHub.
+- **Branch naming**: The local branch is `master`; the GitHub default branch is
+  `main`. When pushing, use `git push origin master:main` or rename the local
+  branch to `main` to avoid confusion.
+
+---
+
+## 16. Current Project State (as of initial scaffolding)
+
+The site structure is fully built but contains **placeholder content**. Here is
+what needs to be replaced with real content before launch:
+
+| Area                     | Status                                                    |
+| ------------------------ | --------------------------------------------------------- |
+| Page shells & routing    | ✅ Complete — all 12 page components, all routes working  |
+| Layout (Header/Footer)   | ✅ Complete — responsive, mobile menu, nav links          |
+| Blog MDX pipeline        | ✅ Working — 3 sample posts (not real content)            |
+| Gallery data             | ⚠️ Hardcoded inline in two page files (needs extraction)  |
+| Shop items               | ⚠️ Placeholder items; `externalUrl` values are all `"#"`  |
+| Images                   | ❌ All placeholder divs — no real images yet              |
+| Cloudinary cloud name    | ❌ `CLOUD_NAME` placeholder in `CloudinaryImage.tsx`      |
+| Mux videos               | ❌ No videos uploaded; using placeholder playback IDs     |
+| Favicon & static assets  | ❌ Only `vite.svg` in `public/` — need real favicon, etc. |
+| robots.txt / sitemap.xml | ❌ Not created yet                                        |
+| shadcn/ui initialisation | ❌ `npx shadcn@latest init` not run yet                   |
+| Cookie consent banner    | ❌ Not implemented (needed before adding analytics)       |
+| Custom domain            | ❌ Not connected to Netlify yet                           |
