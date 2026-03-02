@@ -170,22 +170,73 @@ import MyPost, { frontmatter } from "../../content/blog/my-post.mdx";
 
 ## 6. Cloudinary Images
 
+Uses the official Cloudinary React SDK (`@cloudinary/react` + `@cloudinary/url-gen`).
+
 Use the `<CloudinaryImage>` component:
 
 ```tsx
 import { CloudinaryImage } from "@/components/CloudinaryImage";
 
+// Simple responsive image
 <CloudinaryImage
   publicId="gallery/breath-of-fire"
   alt="Breath of Fire — watercolour botanical painting"
   width={800}
-/>;
+/>
+
+// Square crop with AI gravity
+<CloudinaryImage
+  publicId="gallery/breath-of-fire"
+  alt="Breath of Fire"
+  width={400}
+  aspectRatio="1:1"
+/>
+
+// Portrait crop, face-aware
+<CloudinaryImage
+  publicId="portraits/artist"
+  alt="Artist portrait"
+  width={600}
+  aspectRatio="2:3"
+  gravity="face"
+/>
 ```
 
-- **TODO**: Replace `CLOUD_NAME` in `CloudinaryImage.tsx` with the actual
-  Cloudinary cloud name once the account is set up.
+- Cloud name `dukt6jxh1` is configured in `CloudinaryImage.tsx`.
 - Automatic format (`f_auto`) and quality (`q_auto`) are applied.
-- Responsive `srcSet` is generated automatically from the `width` prop.
+- The `responsive` plugin delivers images sized to the container width (step size configurable via `responsiveStep` prop).
+- Lazy loading and blur placeholder are enabled by default (controllable via `lazy` and `showPlaceholder` props).
+- Supported aspect ratios: `1:1`, `4:3`, `3:2`, `5:4`, `16:9`, `3:4`, `2:3`, `4:5`, `9:16`.
+- Resize modes: `fill` (default), `fit`, `scale`, `crop`, `auto`.
+- Gravity options: `auto` (default, AI-based), `face`, `center`, compass directions.
+
+### Uploading images
+
+A Node.js upload script (`scripts/upload-images.mjs`) handles batch uploads to
+Cloudinary. It uses the server-side `cloudinary` package (dev dependency).
+
+1. **Add your API secret** to `.env` at the project root (gitignored):
+   ```
+   CLOUDINARY_CLOUD_NAME=dukt6jxh1
+   CLOUDINARY_API_KEY=465926378327189
+   CLOUDINARY_API_SECRET=<your secret here>
+   ```
+2. **Place images** in the `images/` folder (also gitignored), mirroring the
+   folder structure you want as Cloudinary public IDs:
+   ```
+   images/
+     gallery/breath-of-fire.jpg   → public ID "gallery/breath-of-fire"
+     portraits/artist.png         → public ID "portraits/artist"
+   ```
+3. **Run the upload**:
+   ```sh
+   npm run upload          # upload new images (skips existing)
+   npm run upload:dry      # preview what would be uploaded
+   npm run upload -- --overwrite  # re-upload even if already on Cloudinary
+   ```
+
+The script is idempotent — re-running it safely skips already-uploaded images
+unless `--overwrite` is passed.
 
 ---
 
@@ -313,12 +364,14 @@ dynamic rendering.
 
 ## 13. Development Workflow
 
-| Command           | What it does                                          |
-| ----------------- | ----------------------------------------------------- |
-| `npm run dev`     | Starts Vite dev server (default `localhost:5173`)     |
-| `npm run build`   | Type-check + `vike build` (SSG pre-render all pages)  |
-| `npm run preview` | Preview the production build locally (`vite preview`) |
-| `npm run lint`    | Run ESLint                                            |
+| Command              | What it does                                          |
+| -------------------- | ----------------------------------------------------- |
+| `npm run dev`        | Starts Vite dev server (default `localhost:5173`)     |
+| `npm run build`      | Type-check + `vike build` (SSG pre-render all pages)  |
+| `npm run preview`    | Preview the production build locally (`vite preview`) |
+| `npm run lint`       | Run ESLint                                            |
+| `npm run upload`     | Upload new images from `images/` to Cloudinary        |
+| `npm run upload:dry` | Preview uploads without actually uploading            |
 
 ESLint is configured with `eslint-plugin-react-hooks` and
 `eslint-plugin-react-refresh`.
@@ -361,7 +414,7 @@ what needs to be replaced with real content before launch:
 | Gallery data             | ⚠️ Hardcoded inline in two page files (needs extraction)  |
 | Shop items               | ⚠️ Placeholder items; `externalUrl` values are all `"#"`  |
 | Images                   | ❌ All placeholder divs — no real images yet              |
-| Cloudinary cloud name    | ❌ `CLOUD_NAME` placeholder in `CloudinaryImage.tsx`      |
+| Cloudinary cloud name    | ✅ Configured (`dukt6jxh1`)                               |
 | Mux videos               | ❌ No videos uploaded; using placeholder playback IDs     |
 | Favicon & static assets  | ❌ Only `vite.svg` in `public/` — need real favicon, etc. |
 | robots.txt / sitemap.xml | ❌ Not created yet                                        |

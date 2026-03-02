@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (contain API secrets)
+.env
+.env.*
+
+# Local images staging folder (for Cloudinary upload)
+images/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

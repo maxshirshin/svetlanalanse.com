@@ -1,5 +1,7 @@
 export default Page;
 
+import { CloudinaryImage } from "@/components/CloudinaryImage";
+
 const subGalleries = [
   {
     slug: "botanical-watercolour",
@@ -13,7 +15,8 @@ const subGalleries = [
     title: "Oil Paintings",
     description:
       "Still life and botanical compositions in oil, inspired by the Dutch Golden Age masters.",
-    count: 8,
+    count: 4,
+    coverImage: "gallery/tulip-parakeet",
   },
   {
     slug: "miniatures",
@@ -43,17 +46,29 @@ function Page() {
               href={`/gallery/${gallery.slug}`}
               className="group block"
             >
-              <div
-                className="aspect-[4/3] mb-4 flex items-center justify-center transition-shadow group-hover:shadow-lg"
-                style={{ backgroundColor: "var(--color-border-light)" }}
-              >
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text-light)" }}
+              {gallery.coverImage ? (
+                <CloudinaryImage
+                  publicId={gallery.coverImage}
+                  alt={`${gallery.title} — cover`}
+                  width={600}
+                  aspectRatio="4:3"
+                  resize="auto"
+                  gravity="auto"
+                  className="w-full h-full object-cover transition-shadow group-hover:shadow-lg"
+                />
+              ) : (
+                <div
+                  className="aspect-[4/3] mb-4 flex items-center justify-center transition-shadow group-hover:shadow-lg"
+                  style={{ backgroundColor: "var(--color-border-light)" }}
                 >
-                  Cover image placeholder
-                </span>
-              </div>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text-light)" }}
+                  >
+                    Cover image placeholder
+                  </span>
+                </div>
+              )}
               <h2
                 className="text-xl mb-1"
                 style={{ fontFamily: "var(--font-heading)" }}

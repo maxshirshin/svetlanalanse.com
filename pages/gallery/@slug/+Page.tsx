@@ -1,13 +1,20 @@
 export default Page;
 
 import { usePageContext } from "vike-react/usePageContext";
+import { CloudinaryImage } from "@/components/CloudinaryImage";
+
+interface GalleryWork {
+  title: string;
+  medium: string;
+  publicId?: string;
+}
 
 const galleryData: Record<
   string,
   {
     title: string;
     description: string;
-    works: { title: string; medium: string }[];
+    works: GalleryWork[];
   }
 > = {
   "botanical-watercolour": {
@@ -28,9 +35,22 @@ const galleryData: Record<
     description:
       "Still life and botanical compositions in oil, inspired by the Dutch Golden Age masters.",
     works: [
-      { title: "Fall to Pieces", medium: "Oil on panel" },
-      { title: "Beautiful Age", medium: "Oil on panel" },
-      { title: "Autumn", medium: "Oil on canvas" },
+      {
+        title: "Grapefruit Slice",
+        medium: "Oil on panel",
+        publicId: "gallery/grapefruit-slice",
+      },
+      {
+        title: "Grapefruit",
+        medium: "Oil on panel",
+        publicId: "gallery/grapefruit",
+      },
+      { title: "Rosehip", medium: "Oil on panel", publicId: "gallery/rosehip" },
+      {
+        title: "Tulip Parakeet",
+        medium: "Oil on panel",
+        publicId: "gallery/tulip-parakeet",
+      },
     ],
   },
   miniatures: {
@@ -87,17 +107,29 @@ function Page() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {gallery.works.map((work) => (
             <div key={work.title}>
-              <div
-                className="aspect-[3/4] mb-3 flex items-center justify-center"
-                style={{ backgroundColor: "var(--color-border-light)" }}
-              >
-                <span
-                  className="text-sm"
-                  style={{ color: "var(--color-text-light)" }}
+              {work.publicId ? (
+                <CloudinaryImage
+                  publicId={work.publicId}
+                  alt={`${work.title} — ${work.medium}`}
+                  width={600}
+                  aspectRatio="3:4"
+                  resize="auto"
+                  gravity="auto"
+                  className="mb-3 w-full"
+                />
+              ) : (
+                <div
+                  className="aspect-[3/4] mb-3 flex items-center justify-center"
+                  style={{ backgroundColor: "var(--color-border-light)" }}
                 >
-                  Image placeholder
-                </span>
-              </div>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text-light)" }}
+                  >
+                    Image placeholder
+                  </span>
+                </div>
+              )}
               <h3
                 className="text-base font-normal"
                 style={{ fontFamily: "var(--font-heading)" }}
