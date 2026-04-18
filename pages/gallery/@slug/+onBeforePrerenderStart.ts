@@ -1,11 +1,7 @@
 export { onBeforePrerenderStart }
 
-const gallerySlugs = [
-  'botanical-watercolour',
-  'oil-paintings',
-  'miniatures',
-]
+import { galleries } from '../../../src/data/galleries'
 
 function onBeforePrerenderStart() {
-  return gallerySlugs.map((slug) => `/gallery/${slug}`)
+  return galleries.map((g) => `/gallery/${g.slug}`)
 }

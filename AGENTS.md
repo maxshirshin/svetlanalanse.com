@@ -36,13 +36,15 @@ Netlify. Blog content is authored in MDX.
 ```
 ├── AGENTS.md                  ← You are here
 ├── content/
-│   └── blog/                  ← MDX blog posts (one .mdx file per post)
+│   ├── blog/                  ← MDX blog posts (one .mdx file per post)
+│   └── gallery/               ← Gallery components (one .tsx file per gallery)
 ├── pages/                     ← Vike file-system routing
 │   ├── +config.ts             ← Global Vike config (prerender, title, etc.)
 │   ├── +Head.tsx              ← Default <head> meta tags
 │   ├── +Layout.tsx            ← Root layout (imports RootLayout)
 │   ├── _error/+Page.tsx       ← 404 / error page
 │   ├── index/+Page.tsx        ← Home page (/)
+│   ├── about/+Page.tsx        ← About the Artist (/about)
 │   ├── gallery/
 │   │   ├── +Page.tsx          ← Gallery index (/gallery)
 │   │   └── @slug/
@@ -66,9 +68,13 @@ Netlify. Blog content is authored in MDX.
 │   │   ├── Footer.tsx
 │   │   ├── NavLink.tsx
 │   │   ├── CloudinaryImage.tsx
+│   │   ├── HeroCard.tsx
+│   │   ├── HeroSlider.tsx
 │   │   └── MuxVideo.tsx
-│   ├── data/                  ← Data files (shop items, blog post registry)
+│   ├── data/                  ← Data files (shop items, blog post & gallery registries)
 │   │   ├── blogPosts.ts
+│   │   ├── galleries.ts
+│   │   ├── heroCards.ts
 │   │   └── shopItems.ts
 │   ├── layouts/
 │   │   └── RootLayout.tsx     ← Header + main + Footer wrapper
@@ -102,15 +108,13 @@ that returns the list of URLs to pre-render at build time.
 - **Blog**: `pages/blog/@slug/+onBeforePrerenderStart.ts` reads slugs from the
   `blogPosts` array in `src/data/blogPosts.ts`. Adding a new MDX post and
   registering it in `blogPosts` is sufficient — no other file needs updating.
-- **Gallery**: `pages/gallery/@slug/+onBeforePrerenderStart.ts` has a
-  **hardcoded** `gallerySlugs` array. When adding or renaming a sub-gallery you
-  must update **three** places:
-  1. `gallerySlugs` in `pages/gallery/@slug/+onBeforePrerenderStart.ts`
-  2. `galleryData` in `pages/gallery/@slug/+Page.tsx`
-  3. `subGalleries` in `pages/gallery/+Page.tsx`
+- **Gallery**: `pages/gallery/@slug/+onBeforePrerenderStart.ts` reads slugs from
+  the `galleries` array in `src/data/galleries.ts`. Adding a new gallery means:
+  1. Creating a `.tsx` component in `content/gallery/`
+  2. Importing and registering it in `src/data/galleries.ts`
 
-  TODO: Extract gallery data into a centralised file in `src/data/` (like blog
-  posts and shop items) to avoid this duplication.
+  All consumers (gallery index, gallery slug page, home page, prerender) import
+  from this single registry.
 
 ---
 
@@ -360,6 +364,42 @@ dynamic rendering.
 6. **Copyright protection**: All artwork images are copyrighted. The Terms page
    explicitly states this. Consider right-click protection and watermarks later.
 
+### Temporarily hidden sections
+
+Blog and Shop links are **commented out** in `Header.tsx` and `Footer.tsx`
+(search for `TODO: unhide`). The pages and routes still exist — this is a visual
+adjustment only. Re-enable when content is ready.
+
+### Home page hero slider
+
+The home page opens with an auto-advancing hero slider (`HeroSlider` component).
+Cards are defined in `src/data/heroCards.ts`:
+
+```ts
+{
+  id: string; // unique key
+  title: string; // large heading
+  description: string; // supporting text
+  link: string; // the whole card is a clickable CTA
+  backgroundImage: string; // Cloudinary public ID
+}
+```
+
+Animation timing is also configured in `heroCards.ts` via `heroSliderConfig`:
+
+- `intervalMs` — time each card is shown (default 6 000 ms)
+- `transitionMs` — crossfade duration (default 800 ms)
+
+The slider pauses on hover and shows dot indicators for manual navigation.
+Background images are loaded from Cloudinary as CSS `background-image` via
+`HeroCard`, anchored top-left with `background-size: cover`.
+
+### Home page gallery section
+
+The "My Galleries" section on the home page displays links to the first 3
+galleries from the `galleries` registry (`galleries.slice(0, 3)`). The button
+reads "View All Galleries" and links to `/gallery`.
+
 ---
 
 ## 13. Development Workflow
@@ -401,23 +441,25 @@ ESLint is configured with `eslint-plugin-react-hooks` and
 
 ---
 
-## 16. Current Project State (as of initial scaffolding)
+## 16. Current Project State
 
 The site structure is fully built but contains **placeholder content**. Here is
 what needs to be replaced with real content before launch:
 
-| Area                     | Status                                                    |
-| ------------------------ | --------------------------------------------------------- |
-| Page shells & routing    | ✅ Complete — all 12 page components, all routes working  |
-| Layout (Header/Footer)   | ✅ Complete — responsive, mobile menu, nav links          |
-| Blog MDX pipeline        | ✅ Working — 3 sample posts (not real content)            |
-| Gallery data             | ⚠️ Hardcoded inline in two page files (needs extraction)  |
-| Shop items               | ⚠️ Placeholder items; `externalUrl` values are all `"#"`  |
-| Images                   | ❌ All placeholder divs — no real images yet              |
-| Cloudinary cloud name    | ✅ Configured (`dukt6jxh1`)                               |
-| Mux videos               | ❌ No videos uploaded; using placeholder playback IDs     |
-| Favicon & static assets  | ❌ Only `vite.svg` in `public/` — need real favicon, etc. |
-| robots.txt / sitemap.xml | ❌ Not created yet                                        |
-| shadcn/ui initialisation | ❌ `npx shadcn@latest init` not run yet                   |
-| Cookie consent banner    | ❌ Not implemented (needed before adding analytics)       |
-| Custom domain            | ❌ Not connected to Netlify yet                           |
+| Area                     | Status                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| Page shells & routing    | ✅ Complete — all pages, all routes working                                    |
+| About page               | ✅ Real content from artist CV (education, exhibitions, awards, etc.)          |
+| Layout (Header/Footer)   | ✅ Complete — responsive, mobile menu, nav links                               |
+| Blog & Shop nav links    | 🔇 Temporarily hidden from Header and Footer (commented out with TODO markers) |
+| Blog MDX pipeline        | ✅ Working — 3 sample posts (not real content)                                 |
+| Gallery data             | ✅ Centralised in `src/data/galleries.ts`; components in `content/gallery/`    |
+| Shop items               | ⚠️ Placeholder items; `externalUrl` values are all `"#"`                       |
+| Images                   | ❌ All placeholder divs — no real images yet                                   |
+| Cloudinary cloud name    | ✅ Configured (`dukt6jxh1`)                                                    |
+| Mux videos               | ❌ No videos uploaded; using placeholder playback IDs                          |
+| Favicon & static assets  | ❌ Only `vite.svg` in `public/` — need real favicon, etc.                      |
+| robots.txt / sitemap.xml | ❌ Not created yet                                                             |
+| shadcn/ui initialisation | ❌ `npx shadcn@latest init` not run yet                                        |
+| Cookie consent banner    | ❌ Not implemented (needed before adding analytics)                            |
+| Custom domain            | ❌ Not connected to Netlify yet                                                |

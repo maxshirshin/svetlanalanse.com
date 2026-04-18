@@ -42,13 +42,15 @@ export function Footer() {
               style={{ color: "var(--color-text-muted)" }}
             >
               <li>
+                <a href="/about">About</a>
+              </li>
+              <li>
                 <a href="/gallery">Gallery</a>
               </li>
+              {/* <li><a href="/blog">Blog</a></li>   TODO: unhide when blog content is ready */}
+              {/* <li><a href="/shop">Shop</a></li>   TODO: unhide when shop is ready */}
               <li>
-                <a href="/blog">Blog</a>
-              </li>
-              <li>
-                <a href="/shop">Shop</a>
+                <a href="/news">News</a>
               </li>
               <li>
                 <a href="/contact">Contact</a>

@@ -3,10 +3,11 @@ import { NavLink } from "@/components/NavLink";
 
 const navigation = [
   { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Blog", href: "/blog" },
+  // { label: "Blog", href: "/blog" },    // TODO: unhide when blog content is ready
   { label: "News", href: "/news" },
-  { label: "Shop", href: "/shop" },
+  // { label: "Shop", href: "/shop" },    // TODO: unhide when shop is ready
   { label: "Contact", href: "/contact" },
 ];
 

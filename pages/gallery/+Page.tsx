@@ -1,30 +1,7 @@
 export default Page;
 
 import { CloudinaryImage } from "@/components/CloudinaryImage";
-
-const subGalleries = [
-  {
-    slug: "botanical-watercolour",
-    title: "Botanical Watercolour",
-    description:
-      "Detailed botanical studies in watercolour on paper and vellum.",
-    count: 12,
-  },
-  {
-    slug: "oil-paintings",
-    title: "Oil Paintings",
-    description:
-      "Still life and botanical compositions in oil, inspired by the Dutch Golden Age masters.",
-    count: 4,
-    coverImage: "gallery/tulip-parakeet",
-  },
-  {
-    slug: "miniatures",
-    title: "Miniature Paintings",
-    description: "Intricate miniature works showcasing precision and delicacy.",
-    count: 6,
-  },
-];
+import { galleries } from "@/data/galleries";
 
 function Page() {
   return (
@@ -40,7 +17,7 @@ function Page() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {subGalleries.map((gallery) => (
+          {galleries.map((gallery) => (
             <a
               key={gallery.slug}
               href={`/gallery/${gallery.slug}`}
@@ -80,12 +57,6 @@ function Page() {
                 style={{ color: "var(--color-text-muted)" }}
               >
                 {gallery.description}
-              </p>
-              <p
-                className="text-xs mt-2"
-                style={{ color: "var(--color-text-light)" }}
-              >
-                {gallery.count} works
               </p>
             </a>
           ))}
