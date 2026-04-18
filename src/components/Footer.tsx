@@ -3,7 +3,7 @@ export function Footer() {
 
   return (
     <footer
-      className="border-t py-12 mt-16"
+      className="border-t py-12"
       style={{
         borderColor: "var(--color-border-light)",
         backgroundColor: "var(--color-surface-muted)",

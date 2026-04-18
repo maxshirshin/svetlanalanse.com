@@ -16,9 +16,8 @@ export function Header() {
 
   return (
     <header
-      className="border-b sticky top-0 z-50 bg-surface/95 backdrop-blur-sm"
+      className="sticky top-0 z-50 bg-surface/90 backdrop-blur-sm"
       style={{
-        borderColor: "var(--color-border-light)",
         height: "var(--header-height)",
       }}
     >
