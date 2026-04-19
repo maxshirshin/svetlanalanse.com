@@ -1,4 +1,4 @@
-import { CloudinaryImage } from "@/components/CloudinaryImage";
+// import { CloudinaryImage } from "@/components/CloudinaryImage";
 
 const works = [
   { title: "Breath of Fire", medium: "Watercolour on paper" },
